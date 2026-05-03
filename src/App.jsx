@@ -88,8 +88,14 @@ function App() {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || "Failed to send email via Gmail API");
+      let errorMessage = "Failed to send email";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error?.message || errorData.message || errorMessage;
+      } catch (e) {
+        errorMessage = `Server returned status ${response.status}`;
+      }
+      throw new Error(errorMessage);
     }
     
     return await response.json();
@@ -260,7 +266,7 @@ Return ONLY a valid JSON object in the exact format below, with no markdown form
       if (error.message === "NOT_AUTHENTICATED") {
         login();
       } else {
-        alert("Failed to send email. " + error.message);
+        alert("Email Error: " + error.message);
       }
     } finally {
       setIsSendingEmail(false);
@@ -289,7 +295,7 @@ Return ONLY a valid JSON object in the exact format below, with no markdown form
       if (error.message === "NOT_AUTHENTICATED") {
         login();
       } else {
-        alert("Failed to send email. " + error.message);
+        alert("Email Error: " + error.message);
       }
     } finally {
       setSendingCandidateId(null);
@@ -318,7 +324,7 @@ Return ONLY a valid JSON object in the exact format below, with no markdown form
       if (error.message === "NOT_AUTHENTICATED") {
         login();
       } else {
-        alert("Failed to send follow-up. " + error.message);
+        alert("Email Error: " + error.message);
       }
     } finally {
       setSendingCandidateId(null);
