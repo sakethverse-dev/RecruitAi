@@ -4,7 +4,7 @@ import './App.css';
 import { 
   User, Mail, Briefcase, Award, FileText, MessageSquare, 
   Sparkles, CheckCircle, Clock, Send, Check, RefreshCw,
-  Edit2, Save
+  Edit2, Save, Eye, Trash2, Plus, Code, Clipboard, Search
 } from 'lucide-react';
 
 function App() {
@@ -112,27 +112,8 @@ function App() {
     setOutput(prev => ({ ...prev, [field]: value }));
   };
 
-  // Mock initial dashboard data
-  const [candidates, setCandidates] = useState([
-    { 
-      id: 1, name: 'Alice Smith', email: 'alice@example.com', status: 'Sent',
-      subjectLine: 'AI Engineer Role at TechCorp',
-      personalizedMessage: 'Hi Alice, I was really impressed by your background in machine learning and would love to chat.',
-      followUpMessage: 'Hi Alice, just floating this to the top of your inbox!'
-    },
-    { 
-      id: 2, name: 'Bob Jones', email: 'bob@example.com', status: 'Replied',
-      subjectLine: 'Full Stack Opportunity',
-      personalizedMessage: 'Hi Bob, your open source contributions are amazing. Are you open to a new role?',
-      followUpMessage: 'Hi Bob, following up on my previous note.'
-    },
-    { 
-      id: 3, name: 'Charlie Davis', email: 'charlie@example.com', status: 'No Response',
-      subjectLine: 'Data Scientist Position',
-      personalizedMessage: 'Hi Charlie, looking for a strong Data Scientist and your profile caught my eye.',
-      followUpMessage: 'Hi Charlie, let me know if you have time for a quick call this week.'
-    },
-  ]);
+  // Initial dashboard data
+  const [candidates, setCandidates] = useState([]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
