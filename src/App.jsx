@@ -319,8 +319,6 @@ Return ONLY a valid JSON object in the exact format below, with no markdown form
     }
   };
 
-  };
-
   const handleTableMarkReplied = (candidateId) => {
     setCandidates(prev => prev.map(c => c.id === candidateId ? { ...c, status: 'Replied' } : c));
   };
