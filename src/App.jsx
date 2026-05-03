@@ -24,17 +24,43 @@ function App() {
   const [isEditingPersonalized, setIsEditingPersonalized] = useState(false);
   const [isEditingFollowUp, setIsEditingFollowUp] = useState(false);
   const [googleToken, setGoogleToken] = useState(null);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   const login = useGoogleLogin({
     onSuccess: (tokenResponse) => {
       setGoogleToken(tokenResponse.access_token);
+      setIsDemoMode(false);
       alert('Successfully connected to Google! You can now send emails directly from your account.');
     },
     onError: () => alert('Failed to connect to Google.'),
     scope: 'https://www.googleapis.com/auth/gmail.send',
   });
 
+  const enterDemoMode = () => {
+    setIsDemoMode(true);
+    setGoogleToken('demo-token');
+    alert('Demo Mode Active! You can now test the full workflow. Emails will be sent from the developer account for demonstration purposes.');
+  };
+
   const sendGmail = async (to, subject, body) => {
+    if (isDemoMode) {
+      // Fallback to Google Apps Script for Demo Mode to send real emails from dev account
+      const response = await fetch("https://script.google.com/macros/s/AKfycbwEzLxeGt_-w-2ngzuyTh00znpLq5PEodCdNxb9h_DsTReDbnZ7uwvcQccz2GHp-E4n/exec", {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({
+          email: to,
+          subject: subject,
+          message: body
+        })
+      });
+      const result = await response.json();
+      if (result.status !== "success") {
+        throw new Error(result.message || "Demo email failed");
+      }
+      return result;
+    }
+
     if (!googleToken) {
       throw new Error("NOT_AUTHENTICATED");
     }
@@ -330,12 +356,17 @@ Return ONLY a valid JSON object in the exact format below, with no markdown form
         </div>
         <div className="auth-section">
           {!googleToken ? (
-            <button className="btn-secondary" onClick={() => login()}>
-              Connect Google Account
-            </button>
+            <div className="auth-buttons">
+              <button className="btn-secondary-outline" onClick={enterDemoMode}>
+                Try Demo Mode
+              </button>
+              <button className="btn-secondary" onClick={() => login()}>
+                Connect Google Account
+              </button>
+            </div>
           ) : (
             <div className="auth-status connected">
-              <CheckCircle size={16} /> Google Connected
+              <CheckCircle size={16} /> {isDemoMode ? 'Demo Mode Active' : 'Google Connected'}
             </div>
           )}
         </div>
