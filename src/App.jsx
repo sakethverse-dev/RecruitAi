@@ -25,6 +25,7 @@ function App() {
   const [isEditingFollowUp, setIsEditingFollowUp] = useState(false);
   const [googleToken, setGoogleToken] = useState(null);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
 
   const login = useGoogleLogin({
     onSuccess: (tokenResponse) => {
@@ -341,6 +342,16 @@ Return ONLY a valid JSON object in the exact format below, with no markdown form
     setCandidates(prev => prev.map(c => c.id === candidateId ? { ...c, status: 'Replied' } : c));
   };
 
+  const handleTableDelete = (candidateId) => {
+    if (window.confirm("Are you sure you want to remove this candidate from the pipeline?")) {
+      setCandidates(prev => prev.filter(c => c.id !== candidateId));
+    }
+  };
+
+  const handleViewDetails = (candidate) => {
+    setSelectedCandidate(candidate);
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case 'Generated':
@@ -612,7 +623,13 @@ Return ONLY a valid JSON object in the exact format below, with no markdown form
                       <div className="action-buttons">
                         <button 
                           className="btn-icon tooltip" 
-                          aria-label="Send Email" 
+                          title="View Details"
+                          onClick={() => handleViewDetails(candidate)}
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button 
+                          className="btn-icon tooltip" 
                           title="Send Email"
                           onClick={() => handleTableSendEmail(candidate)}
                           disabled={sendingCandidateId === candidate.id}
@@ -621,7 +638,6 @@ Return ONLY a valid JSON object in the exact format below, with no markdown form
                         </button>
                         <button 
                           className="btn-icon tooltip" 
-                          aria-label="Mark Replied" 
                           title="Mark Replied"
                           onClick={() => handleTableMarkReplied(candidate.id)}
                         >
@@ -629,12 +645,18 @@ Return ONLY a valid JSON object in the exact format below, with no markdown form
                         </button>
                         <button 
                           className="btn-icon tooltip" 
-                          aria-label="Send Follow-up" 
-                          title="Send Follow-up"
+                          title="Send Follow-up" 
                           onClick={() => handleTableSendFollowUp(candidate)}
                           disabled={sendingCandidateId === candidate.id + '_followup'}
                         >
                           {sendingCandidateId === candidate.id + '_followup' ? <RefreshCw size={16} className="spin" /> : <RefreshCw size={16} />}
+                        </button>
+                        <button 
+                          className="btn-icon tooltip delete-btn" 
+                          title="Delete Candidate"
+                          onClick={() => handleTableDelete(candidate.id)}
+                        >
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </td>
@@ -645,6 +667,52 @@ Return ONLY a valid JSON object in the exact format below, with no markdown form
           </div>
         </section>
       </main>
+
+      {/* Details Modal */}
+      {selectedCandidate && (
+        <div className="modal-overlay" onClick={() => setSelectedCandidate(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Candidate Details: {selectedCandidate.name}</h3>
+              <button className="close-btn" onClick={() => setSelectedCandidate(null)}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="detail-item">
+                <label>Email</label>
+                <p>{selectedCandidate.email}</p>
+              </div>
+              <div className="detail-item">
+                <label>Status</label>
+                {getStatusBadge(selectedCandidate.status)}
+              </div>
+              
+              {selectedCandidate.subjectLine && (
+                <div className="detail-item">
+                  <label>Subject Line</label>
+                  <div className="message-box">{selectedCandidate.subjectLine}</div>
+                </div>
+              )}
+              
+              {selectedCandidate.personalizedMessage && (
+                <div className="detail-item">
+                  <label>Personalized Message</label>
+                  <div className="message-box" dangerouslySetInnerHTML={{ __html: selectedCandidate.personalizedMessage.replace(/\n/g, '<br>') }}></div>
+                </div>
+              )}
+              
+              {selectedCandidate.followUpMessage && (
+                <div className="detail-item">
+                  <label>Follow-up Message</label>
+                  <div className="message-box" dangerouslySetInnerHTML={{ __html: selectedCandidate.followUpMessage.replace(/\n/g, '<br>') }}></div>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn-secondary" onClick={() => setSelectedCandidate(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
