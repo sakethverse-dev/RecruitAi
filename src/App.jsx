@@ -292,7 +292,7 @@ Return ONLY a valid JSON object in the exact format below, with no markdown form
 
   const handleTableSendFollowUp = async (candidate) => {
     if (!candidate.followUpMessage) {
-      alert("No follow-up message generated for this candidate yet.");
+      alert("No follow-up generated for this candidate yet.");
       return;
     }
     if (!googleToken) {
@@ -317,6 +317,8 @@ Return ONLY a valid JSON object in the exact format below, with no markdown form
     } finally {
       setSendingCandidateId(null);
     }
+  };
+
   };
 
   const handleTableMarkReplied = (candidateId) => {
