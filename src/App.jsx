@@ -44,7 +44,7 @@ function App() {
 
   const sendGmail = async (to, subject, body) => {
     if (isDemoMode) {
-      // Fallback to Google Apps Script for Demo Mode to send real emails from dev account
+      // Fallback to Google Apps Script for Demo Mode
       const response = await fetch("https://script.google.com/macros/s/AKfycbwEzLxeGt_-w-2ngzuyTh00znpLq5PEodCdNxb9h_DsTReDbnZ7uwvcQccz2GHp-E4n/exec", {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
@@ -65,26 +65,32 @@ function App() {
       throw new Error("NOT_AUTHENTICATED");
     }
 
-    const emailStr = [
-      'Content-Type: text/plain; charset="UTF-8"\n',
-      'MIME-Version: 1.0\n',
-      `To: ${to}\n`,
-      `Subject: ${subject}\n\n`,
-      body
-    ].join('');
-    
-    const encodedEmail = btoa(unescape(encodeURIComponent(emailStr)))
+    // Prepare email message in RFC 5322 format
+    const emailLines = [
+      `To: ${to}`,
+      `Subject: ${subject}`,
+      'Content-Type: text/html; charset=utf-8',
+      'MIME-Version: 1.0',
+      '',
+      body.replace(/\n/g, '<br>')
+    ];
+    const email = emailLines.join('\r\n');
+
+    // Base64url encode the message
+    const encodedEmail = btoa(unescape(encodeURIComponent(email)))
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=+$/, '');
 
-    const response = await fetch('https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/send', {
-      method: 'POST',
+    const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${googleToken}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${googleToken}`,
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ raw: encodedEmail }),
+      body: JSON.stringify({
+        raw: encodedEmail
+      }),
     });
 
     if (!response.ok) {
